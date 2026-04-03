@@ -1,0 +1,1007 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduTrack • School Attendance System</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&amp;family=Space+Grotesk:wght@500;600&amp;display=swap');
+        
+        :root {
+            --primary: #1e40af;
+        }
+        
+        * {
+            transition-property: color, background-color, border-color, text-decoration-color, fill, stroke;
+            transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+            transition-duration: 150ms;
+        }
+        
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .nav-link {
+            position: relative;
+        }
+        
+        .nav-link:after {
+            content: '';
+            position: absolute;
+            width: 0;
+            height: 2px;
+            bottom: -2px;
+            left: 0;
+            background-color: #1e40af;
+        }
+        
+        .nav-link:hover:after {
+            width: 100%;
+        }
+        
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        
+        .card-hover:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.1), 0 8px 10px -6px rgb(0 0 0 / 0.1);
+        }
+        
+        .dashboard-header {
+            background: linear-gradient(135deg, #1e40af, #3b82f6);
+        }
+    </style>
+</head>
+<body class="bg-gray-50 font-sans">
+    <!-- NAVBAR -->
+    <nav id="main-nav" class="bg-white border-b shadow-sm sticky top-0 z-50">
+        <div class="max-w-7xl mx-auto px-6">
+            <div class="flex items-center justify-between h-16">
+                
+                <!-- Logo -->
+                <div class="flex items-center gap-x-3">
+                    <div class="w-9 h-9 bg-[#1e40af] rounded-2xl flex items-center justify-center text-white text-2xl shadow-inner">
+                        📚
+                    </div>
+                    <div>
+                        <span class="font-semibold text-2xl tracking-tighter text-gray-900">EduTrack</span>
+                    </div>
+                    <span class="text-xs font-medium px-3 py-1 bg-blue-100 text-blue-700 rounded-3xl">School Management</span>
+                </div>
+
+                <!-- Desktop Menu -->
+                <div id="nav-links" class="hidden md:flex items-center gap-x-8 text-sm font-medium">
+                    <a onclick="navigateTo('home')" class="nav-link cursor-pointer text-gray-700 hover:text-[#1e40af] flex items-center gap-x-1">
+                        <i class="fa-solid fa-house"></i>
+                        <span>Home</span>
+                    </a>
+                    <a onclick="navigateTo('signup')" id="nav-signup" class="nav-link cursor-pointer text-gray-700 hover:text-[#1e40af] flex items-center gap-x-1">
+                        <i class="fa-solid fa-user-plus"></i>
+                        <span>Sign Up</span>
+                    </a>
+                    <a onclick="navigateTo('login')" id="nav-login" class="nav-link cursor-pointer text-gray-700 hover:text-[#1e40af] flex items-center gap-x-1">
+                        <i class="fa-solid fa-right-to-bracket"></i>
+                        <span>Login</span>
+                    </a>
+                </div>
+
+                <!-- User Info + Logout -->
+                <div id="user-section" class="hidden items-center gap-x-4">
+                    <div onclick="showProfileModal()" class="flex items-center gap-x-3 cursor-pointer">
+                        <div id="user-avatar" class="w-8 h-8 bg-[#1e40af] text-white rounded-2xl flex items-center justify-center text-lg font-semibold"></div>
+                        <div>
+                            <p id="user-name-display" class="text-sm font-semibold text-gray-900"></p>
+                            <p id="user-role-display" class="text-xs text-gray-500 -mt-1"></p>
+                        </div>
+                    </div>
+                    
+                    <button onclick="logout()" 
+                            class="flex items-center px-5 py-2 text-sm font-medium text-white bg-red-600 hover:bg-red-700 rounded-3xl gap-x-2">
+                        <i class="fa-solid fa-right-from-bracket"></i>
+                        <span>Logout</span>
+                    </button>
+                    
+                    <!-- Mobile Menu Button -->
+                    <button onclick="toggleMobileMenu()" class="md:hidden text-2xl text-gray-700">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+        </div>
+
+        <!-- Mobile Menu -->
+        <div id="mobile-menu" class="hidden md:hidden bg-white border-t px-6 py-4">
+            <div class="flex flex-col gap-y-4 text-sm">
+                <a onclick="navigateTo('home');toggleMobileMenu()" class="flex items-center gap-x-3 py-2 px-4 hover:bg-gray-100 rounded-3xl">
+                    <i class="fa-solid fa-house w-5"></i> Home
+                </a>
+                <a onclick="navigateTo('signup');toggleMobileMenu()" id="mobile-signup" class="flex items-center gap-x-3 py-2 px-4 hover:bg-gray-100 rounded-3xl">
+                    <i class="fa-solid fa-user-plus w-5"></i> Sign Up
+                </a>
+                <a onclick="navigateTo('login');toggleMobileMenu()" id="mobile-login" class="flex items-center gap-x-3 py-2 px-4 hover:bg-gray-100 rounded-3xl">
+                    <i class="fa-solid fa-right-to-bracket w-5"></i> Login
+                </a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- PAGE: HOME / LANDING -->
+    <div id="page-home" class="page active">
+        <div class="max-w-7xl mx-auto px-6 pt-16 pb-24">
+            <div class="grid md:grid-cols-2 gap-16 items-center">
+                <div>
+                    <div class="inline-flex items-center gap-x-2 bg-blue-100 text-blue-700 text-sm font-medium px-6 py-2 rounded-3xl mb-6">
+                        <i class="fa-solid fa-school"></i>
+                        Bengaluru, Karnataka
+                    </div>
+                    <h1 class="text-6xl font-semibold leading-none tracking-tighter text-gray-900 mb-6">
+                        Smart Attendance.<br>Zero Hassle.
+                    </h1>
+                    <p class="text-xl text-gray-600 max-w-md mb-10">
+                        Complete school management system for students, teachers &amp; principal. 
+                        Sign up, login, mark attendance, and monitor everything in real-time.
+                    </p>
+                    
+                    <div class="flex flex-wrap gap-4">
+                        <button onclick="navigateTo('signup')" 
+                                class="px-8 py-4 bg-[#1e40af] text-white rounded-3xl text-lg font-semibold flex items-center gap-x-3 hover:shadow-xl">
+                            Get Started – It's Free
+                            <i class="fa-solid fa-arrow-right"></i>
+                        </button>
+                        
+                        <button onclick="navigateTo('login')" 
+                                class="px-8 py-4 border-2 border-gray-900 text-gray-900 rounded-3xl text-lg font-semibold flex items-center gap-x-3">
+                            Already have account? Login
+                        </button>
+                    </div>
+
+                    <div class="mt-12 flex items-center gap-x-8 text-sm">
+                        <div class="flex -space-x-4">
+                            <div class="w-8 h-8 bg-blue-100 rounded-2xl flex items-center justify-center text-xl ring-2 ring-white">👩‍🎓</div>
+                            <div class="w-8 h-8 bg-amber-100 rounded-2xl flex items-center justify-center text-xl ring-2 ring-white">👨‍🏫</div>
+                            <div class="w-8 h-8 bg-emerald-100 rounded-2xl flex items-center justify-center text-xl ring-2 ring-white">👨‍💼</div>
+                        </div>
+                        <div>
+                            <p class="font-semibold">Trusted by 12 schools in Bengaluru</p>
+                            <p class="text-gray-500 text-sm">Students • Teachers • Principals</p>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Hero Visual -->
+                <div class="relative">
+                    <div class="bg-white rounded-3xl shadow-2xl p-2">
+                        <div class="bg-gray-900 rounded-3xl p-8 text-white">
+                            <div class="flex justify-between mb-8">
+                                <div class="text-sm font-medium">Today's Attendance</div>
+                                <div class="flex items-center gap-x-2 text-emerald-400">
+                                    <i class="fa-solid fa-circle-check"></i>
+                                    <span class="text-sm">92% Present</span>
+                                </div>
+                            </div>
+                            <div class="grid grid-cols-3 gap-4 text-center">
+                                <div class="bg-white/10 rounded-2xl py-6">
+                                    <div class="text-4xl font-semibold">48</div>
+                                    <div class="text-xs uppercase tracking-widest mt-1">Students</div>
+                                </div>
+                                <div class="bg-white/10 rounded-2xl py-6">
+                                    <div class="text-4xl font-semibold">7</div>
+                                    <div class="text-xs uppercase tracking-widest mt-1">Teachers</div>
+                                </div>
+                                <div class="bg-white/10 rounded-2xl py-6">
+                                    <div class="text-4xl font-semibold">3</div>
+                                    <div class="text-xs uppercase tracking-widest mt-1">Classes</div>
+                                </div>
+                            </div>
+                            <div class="mt-8 text-xs opacity-75 flex justify-between">
+                                <div>Principal can view everything →</div>
+                                <div class="text-emerald-400">Live • Updated just now</div>
+                            </div>
+                        </div>
+                    </div>
+                    <!-- Floating badges -->
+                    <div class="absolute -top-4 -right-4 bg-white text-[#1e40af] text-sm font-medium px-6 py-3 rounded-3xl shadow-xl flex items-center gap-x-2">
+                        <i class="fa-solid fa-check-circle"></i>
+                        Attendance Marked
+                    </div>
+                    <div class="absolute -bottom-4 -left-4 bg-white px-5 py-3 rounded-3xl shadow-xl flex items-center text-sm">
+                        <span class="text-emerald-500 font-medium">Principal Dashboard</span>
+                        <span class="ml-3 text-gray-400">👀</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- PAGE: SIGNUP -->
+    <div id="page-signup" class="page max-w-2xl mx-auto px-6 py-16">
+        <div class="bg-white rounded-3xl shadow-xl p-10">
+            <h2 class="text-4xl font-semibold tracking-tighter mb-2">Create your account</h2>
+            <p class="text-gray-500 mb-8">Join as Student, Teacher or Principal</p>
+            
+            <form onsubmit="handleSignup(event)" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Full Name</label>
+                    <input id="signup-name" type="text" required
+                           class="w-full px-5 py-4 border border-gray-200 rounded-3xl focus:outline-none focus:border-[#1e40af]">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Email address</label>
+                    <input id="signup-email" type="email" required
+                           class="w-full px-5 py-4 border border-gray-200 rounded-3xl focus:outline-none focus:border-[#1e40af]">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Password</label>
+                    <input id="signup-password" type="password" required minlength="4"
+                           class="w-full px-5 py-4 border border-gray-200 rounded-3xl focus:outline-none focus:border-[#1e40af]">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-2">I am a...</label>
+                    <div class="grid grid-cols-3 gap-4">
+                        <label onclick="selectRole(this)" data-role="student" 
+                               class="role-option flex flex-col items-center justify-center border-2 border-transparent hover:border-blue-200 rounded-3xl py-6 cursor-pointer bg-white">
+                            <div class="text-4xl mb-3">👩‍🎓</div>
+                            <div class="font-semibold">Student</div>
+                        </label>
+                        <label onclick="selectRole(this)" data-role="teacher" 
+                               class="role-option flex flex-col items-center justify-center border-2 border-transparent hover:border-blue-200 rounded-3xl py-6 cursor-pointer bg-white">
+                            <div class="text-4xl mb-3">👨‍🏫</div>
+                            <div class="font-semibold">Teacher</div>
+                        </label>
+                        <label onclick="selectRole(this)" data-role="principal" 
+                               class="role-option flex flex-col items-center justify-center border-2 border-transparent hover:border-blue-200 rounded-3xl py-6 cursor-pointer bg-white">
+                            <div class="text-4xl mb-3">👨‍💼</div>
+                            <div class="font-semibold">Principal</div>
+                        </label>
+                    </div>
+                    <input type="hidden" id="signup-role" value="">
+                </div>
+                
+                <button type="submit" 
+                        class="w-full py-5 bg-[#1e40af] text-white text-lg font-semibold rounded-3xl hover:shadow-2xl flex items-center justify-center gap-x-3">
+                    <span>Create Account</span>
+                    <i class="fa-solid fa-arrow-right"></i>
+                </button>
+            </form>
+            
+            <p class="text-center text-sm text-gray-500 mt-8">
+                Already have an account? 
+                <span onclick="navigateTo('login')" class="text-[#1e40af] cursor-pointer font-medium">Login here →</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- PAGE: LOGIN -->
+    <div id="page-login" class="page max-w-2xl mx-auto px-6 py-16">
+        <div class="bg-white rounded-3xl shadow-xl p-10">
+            <h2 class="text-4xl font-semibold tracking-tighter mb-2">Welcome back</h2>
+            <p class="text-gray-500 mb-8">Sign in to access your dashboard</p>
+            
+            <form onsubmit="handleLogin(event)" class="space-y-6">
+                <div>
+                    <label class="block text-sm font-medium mb-1">Email address</label>
+                    <input id="login-email" type="email" value="alice@student.com" required
+                           class="w-full px-5 py-4 border border-gray-200 rounded-3xl focus:outline-none focus:border-[#1e40af]">
+                </div>
+                
+                <div>
+                    <label class="block text-sm font-medium mb-1">Password</label>
+                    <input id="login-password" type="password" value="123" required
+                           class="w-full px-5 py-4 border border-gray-200 rounded-3xl focus:outline-none focus:border-[#1e40af]">
+                </div>
+                
+                <button type="submit" 
+                        class="w-full py-5 bg-[#1e40af] text-white text-lg font-semibold rounded-3xl hover:shadow-2xl">
+                    Sign In
+                </button>
+            </form>
+            
+            <div class="mt-6 text-center text-xs text-gray-400">
+                Demo credentials:<br>
+                Student: alice@student.com / 123<br>
+                Teacher: bob@teacher.com / 123<br>
+                Principal: principal@school.com / 123
+            </div>
+            
+            <p class="text-center text-sm text-gray-500 mt-8">
+                New here? 
+                <span onclick="navigateTo('signup')" class="text-[#1e40af] cursor-pointer font-medium">Create account →</span>
+            </p>
+        </div>
+    </div>
+
+    <!-- STUDENT DASHBOARD -->
+    <div id="page-student-dashboard" class="page">
+        <div class="dashboard-header text-white py-8 px-6">
+            <div class="max-w-7xl mx-auto">
+                <div class="flex justify-between items-end">
+                    <div>
+                        <h1 class="text-4xl font-semibold tracking-tighter">Welcome back, <span id="student-name" class="text-amber-200"></span>!</h1>
+                        <p class="text-blue-200">Student Dashboard • Your Attendance Record</p>
+                    </div>
+                    <div class="text-right">
+                        <div id="student-attendance-summary" class="text-5xl font-semibold"></div>
+                        <div class="text-sm uppercase tracking-widest">Overall Attendance</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            <div class="bg-white rounded-3xl shadow p-8">
+                <h3 class="font-semibold mb-6 text-lg flex items-center gap-x-2">
+                    <i class="fa-solid fa-calendar-check"></i> My Attendance History
+                </h3>
+                <table id="student-attendance-table" class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b">
+                            <th class="py-4 text-left font-medium">Date</th>
+                            <th class="py-4 text-left font-medium">Status</th>
+                            <th class="py-4 text-left font-medium">Marked by</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600"></tbody>
+                </table>
+            </div>
+            
+            <div class="mt-8 text-center text-gray-400 text-sm">
+                You can only <strong>view</strong> your attendance. Teachers mark it for you.
+            </div>
+        </div>
+    </div>
+
+    <!-- TEACHER DASHBOARD -->
+    <div id="page-teacher-dashboard" class="page">
+        <div class="dashboard-header text-white py-8 px-6">
+            <div class="max-w-7xl mx-auto">
+                <h1 class="text-4xl font-semibold tracking-tighter">Good morning, <span id="teacher-name" class="text-amber-200"></span> 👋</h1>
+                <p class="text-blue-200">Teacher Dashboard • Mark Student Attendance &amp; View Your Record</p>
+            </div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-6 py-8 grid md:grid-cols-2 gap-8">
+            
+            <!-- Mark Student Attendance -->
+            <div class="bg-white rounded-3xl shadow p-8">
+                <h3 class="font-semibold mb-6 flex items-center gap-x-2">
+                    <i class="fa-solid fa-user-check"></i> Mark Today's Student Attendance
+                </h3>
+                
+                <div class="mb-6">
+                    <label class="block text-sm mb-2">Select Date</label>
+                    <input id="mark-date" type="date" value="2026-04-03" 
+                           class="w-full px-5 py-3 border rounded-3xl">
+                </div>
+                
+                <div id="student-list-mark" class="space-y-3 max-h-96 overflow-auto pr-2"></div>
+                
+                <button onclick="markStudentAttendance()" 
+                        class="mt-8 w-full py-4 bg-emerald-600 hover:bg-emerald-700 text-white font-semibold rounded-3xl flex justify-center items-center gap-x-2">
+                    <i class="fa-solid fa-save"></i> SAVE ATTENDANCE FOR ALL STUDENTS
+                </button>
+            </div>
+            
+            <!-- My (Teacher) Attendance -->
+            <div class="bg-white rounded-3xl shadow p-8">
+                <h3 class="font-semibold mb-6 flex items-center gap-x-2">
+                    <i class="fa-solid fa-user-tie"></i> My Own Attendance Record
+                </h3>
+                <table id="teacher-self-table" class="w-full text-sm">
+                    <thead>
+                        <tr class="border-b">
+                            <th class="py-4 text-left font-medium">Date</th>
+                            <th class="py-4 text-left font-medium">Status</th>
+                        </tr>
+                    </thead>
+                    <tbody class="text-gray-600"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- PRINCIPAL DASHBOARD -->
+    <div id="page-principal-dashboard" class="page">
+        <div class="dashboard-header text-white py-8 px-6">
+            <div class="max-w-7xl mx-auto">
+                <h1 class="text-4xl font-semibold tracking-tighter">Principal Dashboard</h1>
+                <p class="text-blue-200">Full Monitoring • Students + Teachers Attendance</p>
+            </div>
+        </div>
+        
+        <div class="max-w-7xl mx-auto px-6 py-8">
+            
+            <div class="grid md:grid-cols-2 gap-8">
+                
+                <!-- All Students Attendance -->
+                <div class="bg-white rounded-3xl shadow p-8">
+                    <h3 class="font-semibold mb-6 flex items-center justify-between">
+                        <span class="flex items-center gap-x-2">
+                            <i class="fa-solid fa-users"></i> All Students Attendance
+                        </span>
+                        <span onclick="exportReport('student')" class="text-xs bg-gray-100 hover:bg-gray-200 px-4 py-1 rounded-3xl cursor-pointer">📤 Export CSV</span>
+                    </h3>
+                    <div id="principal-student-table-wrapper" class="max-h-96 overflow-auto"></div>
+                </div>
+                
+                <!-- All Teachers Attendance -->
+                <div class="bg-white rounded-3xl shadow p-8">
+                    <h3 class="font-semibold mb-6 flex items-center justify-between">
+                        <span class="flex items-center gap-x-2">
+                            <i class="fa-solid fa-chalkboard-teacher"></i> All Teachers Attendance
+                        </span>
+                        <span onclick="exportReport('teacher')" class="text-xs bg-gray-100 hover:bg-gray-200 px-4 py-1 rounded-3xl cursor-pointer">📤 Export CSV</span>
+                    </h3>
+                    <div id="principal-teacher-table-wrapper" class="max-h-96 overflow-auto"></div>
+                </div>
+            </div>
+            
+            <div class="mt-8 bg-white rounded-3xl p-8 text-sm">
+                <h4 class="font-semibold mb-4">Quick Stats</h4>
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-6" id="principal-stats">
+                    <!-- Populated by JS -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Profile Modal -->
+    <div onclick="if(event.target.id === 'profile-modal')hideProfileModal()" 
+         id="profile-modal" class="hidden fixed inset-0 bg-black/60 z-[9999] flex items-center justify-center">
+        <div onclick="event.stopImmediatePropagation()" 
+             class="bg-white rounded-3xl max-w-sm w-full mx-4 p-8">
+            <h3 class="text-xl font-semibold mb-6">Account Details</h3>
+            <div id="modal-content" class="space-y-6"></div>
+            <button onclick="hideProfileModal()" 
+                    class="mt-8 w-full py-4 text-gray-500 border rounded-3xl">Close</button>
+        </div>
+    </div>
+
+    <script>
+        // Tailwind script initialization
+        function initTailwind() {
+            return {
+                config(userConfig = {}) {
+                    return {
+                        configUser: userConfig,
+                        theme: {
+                            extend: {},
+                        },
+                    }
+                },
+                theme: {
+                    extend: {},
+                },
+            }
+        }
+        
+        // Global data stores
+        let currentUser = null
+        let users = []
+        let studentAttendances = []
+        let teacherAttendances = []
+        
+        // Predefined demo users
+        function seedDemoData() {
+            // Check localStorage first
+            if (localStorage.getItem('edutrack_users')) {
+                users = JSON.parse(localStorage.getItem('edutrack_users'))
+                studentAttendances = JSON.parse(localStorage.getItem('edutrack_student_attendance') || '[]')
+                teacherAttendances = JSON.parse(localStorage.getItem('edutrack_teacher_attendance') || '[]')
+                return
+            }
+            
+            // Seed fresh demo data
+            users = [
+                {
+                    id: 1,
+                    name: "Alice Johnson",
+                    email: "alice@student.com",
+                    password: "123",
+                    role: "student"
+                },
+                {
+                    id: 2,
+                    name: "Bob Smith",
+                    email: "bob@teacher.com",
+                    password: "123",
+                    role: "teacher"
+                },
+                {
+                    id: 3,
+                    name: "Principal Rajesh Rao",
+                    email: "principal@school.com",
+                    password: "123",
+                    role: "principal"
+                },
+                {
+                    id: 4,
+                    name: "Rohan Sharma",
+                    email: "rohan@student.com",
+                    password: "123",
+                    role: "student"
+                },
+                {
+                    id: 5,
+                    name: "Meera Patel",
+                    email: "meera@teacher.com",
+                    password: "123",
+                    role: "teacher"
+                }
+            ]
+            
+            // Seed some student attendance
+            studentAttendances = [
+                { id: 1, studentId: 1, date: "2026-04-01", status: "present", markedBy: "Bob Smith" },
+                { id: 2, studentId: 1, date: "2026-04-02", status: "present", markedBy: "Bob Smith" },
+                { id: 3, studentId: 1, date: "2026-04-03", status: "absent", markedBy: "Bob Smith" },
+                { id: 4, studentId: 4, date: "2026-04-01", status: "present", markedBy: "Bob Smith" },
+                { id: 5, studentId: 4, date: "2026-04-02", status: "present", markedBy: "Bob Smith" },
+                { id: 6, studentId: 4, date: "2026-04-03", status: "present", markedBy: "Bob Smith" },
+            ]
+            
+            // Seed some teacher attendance
+            teacherAttendances = [
+                { id: 1, teacherId: 2, date: "2026-04-01", status: "present" },
+                { id: 2, teacherId: 2, date: "2026-04-02", status: "present" },
+                { id: 3, teacherId: 5, date: "2026-04-01", status: "present" },
+                { id: 4, teacherId: 5, date: "2026-04-03", status: "absent" },
+            ]
+            
+            saveToLocalStorage()
+        }
+        
+        function saveToLocalStorage() {
+            localStorage.setItem('edutrack_users', JSON.stringify(users))
+            localStorage.setItem('edutrack_student_attendance', JSON.stringify(studentAttendances))
+            localStorage.setItem('edutrack_teacher_attendance', JSON.stringify(teacherAttendances))
+        }
+        
+        // Navigation
+        function navigateTo(page) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'))
+            // Show requested page
+            const target = document.getElementById('page-' + page)
+            if (target) target.classList.add('active')
+            
+            // Update navbar visibility
+            if (currentUser) {
+                document.getElementById('nav-signup').classList.add('hidden')
+                document.getElementById('nav-login').classList.add('hidden')
+                document.getElementById('user-section').classList.remove('hidden')
+                document.getElementById('user-name-display').textContent = currentUser.name.split(' ')[0]
+                document.getElementById('user-role-display').textContent = currentUser.role.toUpperCase()
+                document.getElementById('user-avatar').innerHTML = currentUser.role === 'student' ? '👩‍🎓' : currentUser.role === 'teacher' ? '👨‍🏫' : '👨‍💼'
+            } else {
+                document.getElementById('nav-signup').classList.remove('hidden')
+                document.getElementById('nav-login').classList.remove('hidden')
+                document.getElementById('user-section').classList.add('hidden')
+            }
+            
+            // Load role-specific dashboards
+            if (page === 'student-dashboard' && currentUser && currentUser.role === 'student') {
+                loadStudentDashboard()
+            } else if (page === 'teacher-dashboard' && currentUser && currentUser.role === 'teacher') {
+                loadTeacherDashboard()
+            } else if (page === 'principal-dashboard' && currentUser && currentUser.role === 'principal') {
+                loadPrincipalDashboard()
+            }
+        }
+        
+        // Signup
+        function handleSignup(e) {
+            e.preventDefault()
+            
+            const name = document.getElementById('signup-name').value.trim()
+            const email = document.getElementById('signup-email').value.trim().toLowerCase()
+            const password = document.getElementById('signup-password').value
+            const role = document.getElementById('signup-role').value
+            
+            if (!role) {
+                alert("Please select your role (Student / Teacher / Principal)")
+                return
+            }
+            
+            // Check if email already exists
+            if (users.find(u => u.email === email)) {
+                alert("An account with this email already exists!")
+                return
+            }
+            
+            const newUser = {
+                id: Date.now(),
+                name: name,
+                email: email,
+                password: password,
+                role: role
+            }
+            
+            users.push(newUser)
+            saveToLocalStorage()
+            
+            alert(`🎉 Account created successfully as ${role}! You can now login.`)
+            navigateTo('login')
+            
+            // Pre-fill login
+            document.getElementById('login-email').value = email
+            document.getElementById('login-password').value = password
+        }
+        
+        function selectRole(el) {
+            // Remove active from all
+            document.querySelectorAll('.role-option').forEach(o => o.classList.remove('border-[#1e40af]', 'bg-blue-50'))
+            // Activate clicked
+            el.classList.add('border-[#1e40af]', 'bg-blue-50')
+            document.getElementById('signup-role').value = el.dataset.role
+        }
+        
+        // Login
+        function handleLogin(e) {
+            e.preventDefault()
+            
+            const email = document.getElementById('login-email').value.trim().toLowerCase()
+            const password = document.getElementById('login-password').value
+            
+            const user = users.find(u => u.email === email && u.password === password)
+            
+            if (!user) {
+                alert("Invalid email or password.\n\nTry demo credentials shown below the form.")
+                return
+            }
+            
+            currentUser = user
+            alert(`✅ Logged in as ${user.role.toUpperCase()}: ${user.name}`)
+            
+            // Redirect to correct dashboard
+            if (user.role === 'student') {
+                navigateTo('student-dashboard')
+            } else if (user.role === 'teacher') {
+                navigateTo('teacher-dashboard')
+            } else if (user.role === 'principal') {
+                navigateTo('principal-dashboard')
+            }
+        }
+        
+        function logout() {
+            currentUser = null
+            navigateTo('home')
+            alert("👋 Logged out successfully!")
+        }
+        
+        // Load Student Dashboard
+        function loadStudentDashboard() {
+            document.getElementById('student-name').textContent = currentUser.name
+            
+            // Calculate attendance %
+            const myRecords = studentAttendances.filter(r => r.studentId === currentUser.id)
+            if (myRecords.length === 0) {
+                document.getElementById('student-attendance-summary').innerHTML = `<span class="text-3xl text-gray-300">—</span>`
+            } else {
+                const present = myRecords.filter(r => r.status === 'present').length
+                const percentage = Math.round((present / myRecords.length) * 100)
+                document.getElementById('student-attendance-summary').innerHTML = `
+                    <span class="text-emerald-300">${percentage}%</span>
+                `
+            }
+            
+            // Render table
+            const tbody = document.querySelector('#student-attendance-table tbody')
+            tbody.innerHTML = ''
+            
+            const sorted = [...myRecords].sort((a, b) => new Date(b.date) - new Date(a.date))
+            
+            if (sorted.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="3" class="py-12 text-center text-gray-400">No attendance records yet.<br>Teachers will mark them soon.</td></tr>`
+                return
+            }
+            
+            sorted.forEach(record => {
+                const tr = document.createElement('tr')
+                tr.className = 'border-b last:border-none'
+                tr.innerHTML = `
+                    <td class="py-5">${record.date}</td>
+                    <td class="py-5">
+                        <span class="inline-flex px-4 py-1 rounded-3xl text-xs font-medium ${record.status === 'present' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">
+                            ${record.status.toUpperCase()}
+                        </span>
+                    </td>
+                    <td class="py-5 text-gray-500">${record.markedBy}</td>
+                `
+                tbody.appendChild(tr)
+            })
+        }
+        
+        // Load Teacher Dashboard
+        function loadTeacherDashboard() {
+            document.getElementById('teacher-name').textContent = currentUser.name
+            
+            // Render students list for marking
+            const container = document.getElementById('student-list-mark')
+            container.innerHTML = ''
+            
+            const allStudents = users.filter(u => u.role === 'student')
+            
+            allStudents.forEach(student => {
+                const div = document.createElement('div')
+                div.className = 'flex justify-between items-center bg-gray-50 px-6 py-4 rounded-3xl'
+                div.innerHTML = `
+                    <div class="flex items-center gap-x-4">
+                        <div class="text-3xl">👩‍🎓</div>
+                        <div>
+                            <p class="font-medium">${student.name}</p>
+                            <p class="text-xs text-gray-400">ID #${student.id}</p>
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-x-3">
+                        <label class="cursor-pointer flex items-center gap-x-1">
+                            <input type="radio" name="status-${student.id}" value="present" checked class="accent-emerald-600">
+                            <span class="text-emerald-600 text-sm font-medium">Present</span>
+                        </label>
+                        <label class="cursor-pointer flex items-center gap-x-1">
+                            <input type="radio" name="status-${student.id}" value="absent" class="accent-red-600">
+                            <span class="text-red-600 text-sm font-medium">Absent</span>
+                        </label>
+                    </div>
+                `
+                container.appendChild(div)
+            })
+            
+            // Render teacher's own attendance
+            const myTeacherRecords = teacherAttendances.filter(r => r.teacherId === currentUser.id)
+            const tbody = document.querySelector('#teacher-self-table tbody')
+            tbody.innerHTML = ''
+            
+            if (myTeacherRecords.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="2" class="py-12 text-center text-gray-400">No records yet.<br>Principal or admin can mark teacher attendance.</td></tr>`
+                return
+            }
+            
+            myTeacherRecords.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(record => {
+                const tr = document.createElement('tr')
+                tr.className = 'border-b last:border-none'
+                tr.innerHTML = `
+                    <td class="py-5">${record.date}</td>
+                    <td class="py-5">
+                        <span class="inline-flex px-4 py-1 rounded-3xl text-xs font-medium ${record.status === 'present' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">
+                            ${record.status.toUpperCase()}
+                        </span>
+                    </td>
+                `
+                tbody.appendChild(tr)
+            })
+        }
+        
+        // Teacher marks student attendance
+        function markStudentAttendance() {
+            const date = document.getElementById('mark-date').value
+            if (!date) return alert("Please select a date")
+            
+            const allStudents = users.filter(u => u.role === 'student')
+            
+            allStudents.forEach(student => {
+                // Find the selected radio
+                const selected = document.querySelector(`input[name="status-${student.id}"]:checked`)
+                if (!selected) return
+                
+                const status = selected.value
+                
+                // Check if already recorded for this date & student
+                const existingIndex = studentAttendances.findIndex(r => 
+                    r.studentId === student.id && r.date === date
+                )
+                
+                if (existingIndex > -1) {
+                    studentAttendances[existingIndex].status = status
+                    studentAttendances[existingIndex].markedBy = currentUser.name
+                } else {
+                    studentAttendances.push({
+                        id: Date.now() + Math.random(),
+                        studentId: student.id,
+                        date: date,
+                        status: status,
+                        markedBy: currentUser.name
+                    })
+                }
+            })
+            
+            saveToLocalStorage()
+            alert(`✅ Attendance for ${date} has been saved for all students!`)
+            
+            // Refresh teacher dashboard
+            loadTeacherDashboard()
+            
+            // Also refresh principal if open
+            if (currentUser.role === 'principal') loadPrincipalDashboard()
+        }
+        
+        // Load Principal Dashboard
+        function loadPrincipalDashboard() {
+            // Students table
+            const studentsWrapper = document.getElementById('principal-student-table-wrapper')
+            let html = `<table class="w-full text-sm"><thead><tr class="bg-gray-100"><th class="text-left py-4 px-6">Student</th><th class="text-left py-4 px-6">Date</th><th class="text-left py-4 px-6">Status</th><th class="text-left py-4 px-6">Marked By</th></tr></thead><tbody>`
+            
+            studentAttendances.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(record => {
+                const student = users.find(u => u.id === record.studentId)
+                if (!student) return
+                html += `
+                <tr class="border-b">
+                    <td class="py-4 px-6">${student.name}</td>
+                    <td class="py-4 px-6">${record.date}</td>
+                    <td class="py-4 px-6">
+                        <span class="inline-flex px-4 py-1 rounded-3xl text-xs font-medium ${record.status === 'present' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">
+                            ${record.status.toUpperCase()}
+                        </span>
+                    </td>
+                    <td class="py-4 px-6">${record.markedBy}</td>
+                </tr>`
+            })
+            html += `</tbody></table>`
+            if (studentAttendances.length === 0) html = `<p class="py-12 text-center text-gray-400">No student attendance yet.</p>`
+            studentsWrapper.innerHTML = html
+            
+            // Teachers table
+            const teachersWrapper = document.getElementById('principal-teacher-table-wrapper')
+            let html2 = `<table class="w-full text-sm"><thead><tr class="bg-gray-100"><th class="text-left py-4 px-6">Teacher</th><th class="text-left py-4 px-6">Date</th><th class="text-left py-4 px-6">Status</th></tr></thead><tbody>`
+            
+            teacherAttendances.sort((a, b) => new Date(b.date) - new Date(a.date)).forEach(record => {
+                const teacher = users.find(u => u.id === record.teacherId)
+                if (!teacher) return
+                html2 += `
+                <tr class="border-b">
+                    <td class="py-4 px-6">${teacher.name}</td>
+                    <td class="py-4 px-6">${record.date}</td>
+                    <td class="py-4 px-6">
+                        <span class="inline-flex px-4 py-1 rounded-3xl text-xs font-medium ${record.status === 'present' ? 'bg-emerald-100 text-emerald-700' : 'bg-red-100 text-red-700'}">
+                            ${record.status.toUpperCase()}
+                        </span>
+                    </td>
+                </tr>`
+            })
+            html2 += `</tbody></table>`
+            if (teacherAttendances.length === 0) html2 = `<p class="py-12 text-center text-gray-400">No teacher attendance yet.</p>`
+            teachersWrapper.innerHTML = html2
+            
+            // Quick stats
+            const statsContainer = document.getElementById('principal-stats')
+            const totalStudents = users.filter(u => u.role === 'student').length
+            const totalTeachers = users.filter(u => u.role === 'teacher').length
+            
+            const today = "2026-04-03"
+            const todayStudentPresent = studentAttendances.filter(r => r.date === today && r.status === 'present').length
+            const todayTeacherPresent = teacherAttendances.filter(r => r.date === today && r.status === 'present').length
+            
+            statsContainer.innerHTML = `
+                <div class="text-center border rounded-3xl p-6">
+                    <div class="text-4xl font-semibold text-emerald-600">${todayStudentPresent}</div>
+                    <div class="text-xs tracking-widest uppercase mt-1">Students Present Today</div>
+                    <div class="text-xs text-gray-400">out of ${totalStudents}</div>
+                </div>
+                <div class="text-center border rounded-3xl p-6">
+                    <div class="text-4xl font-semibold text-emerald-600">${todayTeacherPresent}</div>
+                    <div class="text-xs tracking-widest uppercase mt-1">Teachers Present Today</div>
+                    <div class="text-xs text-gray-400">out of ${totalTeachers}</div>
+                </div>
+                <div class="text-center border rounded-3xl p-6">
+                    <div class="text-4xl font-semibold">${studentAttendances.length}</div>
+                    <div class="text-xs tracking-widest uppercase mt-1">Total Student Records</div>
+                </div>
+                <div class="text-center border rounded-3xl p-6">
+                    <div class="text-4xl font-semibold">${teacherAttendances.length}</div>
+                    <div class="text-xs tracking-widest uppercase mt-1">Total Teacher Records</div>
+                </div>
+            `
+            // Principal can also mark teacher attendance (simple form inside stats)
+        }
+        
+        function exportReport(type) {
+            let data = []
+            let filename = ''
+            
+            if (type === 'student') {
+                data = studentAttendances.map(r => {
+                    const student = users.find(u => u.id === r.studentId)
+                    return {
+                        Student: student ? student.name : 'Unknown',
+                        Date: r.date,
+                        Status: r.status,
+                        'Marked By': r.markedBy
+                    }
+                })
+                filename = 'student-attendance-report.csv'
+            } else {
+                data = teacherAttendances.map(r => {
+                    const teacher = users.find(u => u.id === r.teacherId)
+                    return {
+                        Teacher: teacher ? teacher.name : 'Unknown',
+                        Date: r.date,
+                        Status: r.status
+                    }
+                })
+                filename = 'teacher-attendance-report.csv'
+            }
+            
+            if (data.length === 0) {
+                alert("Nothing to export yet!")
+                return
+            }
+            
+            // Simple CSV export
+            let csv = 'data:text/csv;charset=utf-8,' + 
+                      Object.keys(data[0]).join(',') + '\n' +
+                      data.map(row => Object.values(row).join(',')).join('\n')
+            
+            const encodedUri = encodeURI(csv)
+            const link = document.createElement("a")
+            link.setAttribute("href", encodedUri)
+            link.setAttribute("download", filename)
+            document.body.appendChild(link)
+            link.click()
+            document.body.removeChild(link)
+        }
+        
+        function toggleMobileMenu() {
+            const menu = document.getElementById('mobile-menu')
+            menu.classList.toggle('hidden')
+        }
+        
+        function showProfileModal() {
+            const modal = document.getElementById('profile-modal')
+            const content = document.getElementById('modal-content')
+            
+            content.innerHTML = `
+                <div class="flex items-center gap-x-4">
+                    <div class="text-5xl">${currentUser.role === 'student' ? '👩‍🎓' : currentUser.role === 'teacher' ? '👨‍🏫' : '👨‍💼'}</div>
+                    <div>
+                        <h4 class="font-semibold text-2xl">${currentUser.name}</h4>
+                        <p class="text-[#1e40af]">${currentUser.email}</p>
+                        <p class="uppercase text-xs mt-1 font-medium bg-gray-100 inline-block px-4 py-1 rounded-3xl">${currentUser.role}</p>
+                    </div>
+                </div>
+                <div class="pt-6 border-t grid grid-cols-2 gap-4 text-sm">
+                    <div class="bg-gray-50 rounded-3xl p-5">
+                        <div class="uppercase text-xs text-gray-400">Joined</div>
+                        <div class="font-medium">April 2026</div>
+                    </div>
+                    <div class="bg-gray-50 rounded-3xl p-5">
+                        <div class="uppercase text-xs text-gray-400">School</div>
+                        <div class="font-medium">Global International School, Bengaluru</div>
+                    </div>
+                </div>
+                <div class="text-xs text-gray-400 mt-8 text-center">All data is stored locally in your browser for this demo.</div>
+            `
+            modal.classList.remove('hidden')
+            modal.classList.add('flex')
+        }
+        
+        function hideProfileModal() {
+            const modal = document.getElementById('profile-modal')
+            modal.classList.add('hidden')
+            modal.classList.remove('flex')
+        }
+        
+        // Initialize everything
+        function initializeApp() {
+            seedDemoData()
+            initTailwind()
+            
+            // Default to home page
+            console.log('%c✅ EduTrack School Website Prototype Ready!', 'background:#1e40af;color:#fff;padding:2px 6px;border-radius:4px')
+            console.log('Multiple webpages + full signup/login + separate attendance for students & teachers + principal monitoring = fully working!')
+            console.log('Try logging in with demo accounts above.')
+        }
+        
+        // Boot the app
+        window.onload = initializeApp
+    </script>
+</body>
+</html>
